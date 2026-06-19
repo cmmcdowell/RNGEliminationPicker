@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Elimination Number Draw</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --panel-soft: #f1f4ff;
+      --text: #172033;
+      --muted: #657184;
+      --border: #d9deea;
+      --accent: #365cff;
+      --accent-dark: #2447d8;
+      --accent-soft: #eef2ff;
+      --gold: #ffd166;
+      --pink: #ff4d8d;
+      --green: #20c997;
+      --danger: #b42318;
+      --chip: #eef2ff;
+      --shadow: 0 22px 70px rgba(20, 30, 55, 0.14);
+      --stage-shadow: 0 30px 100px rgba(54, 92, 255, 0.22);
+      --stage-border: rgba(54, 92, 255, 0.32);
+      --stage-glow: rgba(255, 209, 102, 0.3);
+      --winner-bg: #ffffff;
+      --winner-text: #172033;
+      --winner-ring: rgba(54, 92, 255, 0.2);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --panel: #161b22;
+        --panel-soft: #1b2540;
+        --text: #f0f6fc;
+        --muted: #8b949e;
+        --border: #30363d;
+        --accent: #6c8cff;
+        --accent-dark: #5878f2;
+        --accent-soft: #1f2a44;
+        --gold: #ffd166;
+        --pink: #ff6ba6;
+        --green: #32d296;
+        --danger: #ff7b72;
+        --chip: #1f2a44;
+        --shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
+        --stage-shadow: 0 30px 100px rgba(108, 140, 255, 0.2);
+        --stage-border: rgba(108, 140, 255, 0.34);
+        --winner-bg: #0f172a;
+        --winner-text: #f8fafc;
+        --winner-ring: rgba(108, 140, 255, 0.24);
+      }
+    }
+
+    body.sad-mode {
+      --bg: #f1f3f5;
+      --panel: #ffffff;
+      --panel-soft: #eceff3;
+      --text: #1f2933;
+      --muted: #687586;
+      --border: #cfd6df;
+      --accent: #596579;
+      --accent-dark: #465164;
+      --accent-soft: #e7ebf0;
+      --gold: #a8b0ba;
+      --pink: #7c8796;
+      --green: #6b7786;
+      --chip: #eceff3;
+      --stage-shadow: 0 24px 80px rgba(66, 76, 90, 0.18);
+      --stage-border: rgba(89, 101, 121, 0.34);
+      --stage-glow: rgba(89, 101, 121, 0.14);
+      --winner-bg: #f8fafc;
+      --winner-text: #293241;
+      --winner-ring: rgba(89, 101, 121, 0.22);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body.sad-mode {
+        --bg: #0f1318;
+        --panel: #171b21;
+        --panel-soft: #1e242c;
+        --text: #e5e7eb;
+        --muted: #9aa4b2;
+        --border: #333b46;
+        --accent: #8a94a6;
+        --accent-dark: #747f91;
+        --accent-soft: #242b35;
+        --chip: #242b35;
+        --stage-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+        --stage-border: rgba(138, 148, 166, 0.3);
+        --winner-bg: #1f2933;
+        --winner-text: #f3f4f6;
+        --winner-ring: rgba(138, 148, 166, 0.2);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 209, 102, 0.22), transparent 24rem),
+        radial-gradient(circle at 85% 15%, rgba(255, 77, 141, 0.16), transparent 22rem),
+        radial-gradient(circle at 30% 90%, rgba(54, 92, 255, 0.18), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      transition: background 300ms ease, color 200ms ease;
+    }
+
+    body.sad-mode {
+      background:
+        radial-gradient(circle at 18% 8%, rgba(89, 101, 121, 0.12), transparent 25rem),
+        radial-gradient(circle at 80% 15%, rgba(70, 81, 100, 0.1), transparent 25rem),
+        linear-gradient(180deg, rgba(118, 130, 148, 0.08), transparent 32rem),
+        var(--bg);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -50vmax;
+      z-index: -2;
+      opacity: 0.38;
+      background: conic-gradient(from 180deg, transparent, rgba(54, 92, 255, 0.14), transparent, rgba(255, 209, 102, 0.16), transparent);
+      animation: slowSpin 28s linear infinite;
+      transition: opacity 300ms ease;
+    }
+
+    body.sad-mode::before {
+      opacity: 0.13;
+      background: conic-gradient(from 180deg, transparent, rgba(77, 88, 104, 0.18), transparent, rgba(40, 48, 59, 0.14), transparent);
+      animation-duration: 46s;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 24px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 6px;
+      font-size: clamp(2rem, 5vw, 4.25rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
+
+    .subtitle {
+      margin-bottom: 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 1.8vw, 1.12rem);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.68fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        display: block;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .stage-card {
+      position: relative;
+      padding: clamp(18px, 3vw, 30px);
+      overflow: hidden;
+      box-shadow: var(--stage-shadow);
+    }
+
+    .stage-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.45;
+      background:
+        linear-gradient(90deg, transparent 0 24%, rgba(255, 255, 255, 0.18) 25%, transparent 26% 49%, rgba(255, 255, 255, 0.12) 50%, transparent 51% 74%, rgba(255, 255, 255, 0.12) 75%, transparent 76%),
+        radial-gradient(circle at 20% 15%, var(--stage-glow), transparent 14rem);
+      mask-image: linear-gradient(to bottom, black, transparent 72%);
+      transition: opacity 240ms ease;
+    }
+
+    body.sad-mode .stage-card::after {
+      opacity: 0.22;
+      background:
+        linear-gradient(180deg, rgba(60, 70, 82, 0.1), transparent 58%),
+        radial-gradient(circle at 50% 10%, var(--stage-glow), transparent 18rem);
+    }
+
+    body.celebrating .stage-card {
+      animation: stagePulse 800ms ease both;
+    }
+
+    body.mourning .stage-card {
+      animation: quietSway 900ms ease both;
+    }
+
+    .stage-header {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    .eyebrow {
+      margin-bottom: 4px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .stage-header h2 {
+      margin-bottom: 0;
+      font-size: clamp(1.65rem, 4vw, 3.2rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .remaining-pill {
+      min-width: 104px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      text-align: center;
+      background: color-mix(in srgb, var(--panel) 78%, var(--accent-soft));
+    }
+
+    .remaining-pill strong {
+      display: block;
+      font-size: 1.75rem;
+      line-height: 1;
+    }
+
+    .remaining-pill span {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .winner-board {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      min-height: clamp(300px, 46vh, 500px);
+      flex-wrap: wrap;
+      gap: clamp(12px, 2vw, 22px);
+      align-items: center;
+      justify-content: center;
+      padding: clamp(18px, 4vw, 34px);
+      border: 1px solid var(--stage-border);
+      border-radius: 32px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--gold) 30%, transparent), transparent 19rem),
+        linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 70%, transparent), color-mix(in srgb, var(--panel) 82%, transparent));
+      transition: background 260ms ease, border-color 260ms ease;
+    }
+
+    body.sad-mode .winner-board {
+      background:
+        radial-gradient(circle at 50% 0%, rgba(90, 101, 116, 0.16), transparent 20rem),
+        linear-gradient(145deg, color-mix(in srgb, var(--panel-soft) 70%, transparent), color-mix(in srgb, var(--panel) 86%, transparent));
+    }
+
+    .winner-board::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      opacity: 0.55;
+      background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.34), transparent, rgba(255, 209, 102, 0.18), transparent);
+      animation: spotlight 7s linear infinite;
+      transition: opacity 240ms ease;
+    }
+
+    body.sad-mode .winner-board::before {
+      opacity: 0.16;
+      background: conic-gradient(from 0deg, transparent, rgba(120, 131, 145, 0.22), transparent, rgba(60, 70, 82, 0.12), transparent);
+      animation-duration: 18s;
+    }
+
+    .winner-chip {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: clamp(112px, 15vw, 190px);
+      min-height: clamp(112px, 15vw, 190px);
+      padding: clamp(12px, 2.4vw, 24px);
+      border-radius: clamp(24px, 4vw, 44px);
+      border: 2px solid color-mix(in srgb, var(--accent) 36%, var(--border));
+      background: radial-gradient(circle at 30% 20%, #ffffff, var(--winner-bg));
+      color: var(--winner-text);
+      box-shadow:
+        0 24px 54px rgba(20, 30, 55, 0.22),
+        0 0 0 10px var(--winner-ring);
+      font-size: clamp(4.2rem, 11vw, 9.25rem);
+      font-weight: 1000;
+      line-height: 0.9;
+      letter-spacing: -0.08em;
+      animation: winnerPop 700ms cubic-bezier(0.2, 1.25, 0.28, 1) both;
+      animation-delay: calc(var(--i, 0) * 70ms);
+    }
+
+    .winner-board.compact .winner-chip {
+      min-width: clamp(76px, 10vw, 128px);
+      min-height: clamp(76px, 10vw, 128px);
+      border-radius: clamp(18px, 3vw, 30px);
+      font-size: clamp(2.45rem, 7vw, 5.8rem);
+    }
+
+    body.sad-mode .winner-chip {
+      border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+      background: linear-gradient(180deg, color-mix(in srgb, var(--winner-bg) 96%, #6b7280), var(--winner-bg));
+      box-shadow:
+        0 20px 48px rgba(40, 48, 59, 0.2),
+        0 0 0 9px var(--winner-ring);
+      animation-name: sadReveal;
+      animation-duration: 850ms;
+      animation-timing-function: ease;
+    }
+
+    .board-empty {
+      position: relative;
+      z-index: 1;
+      max-width: 460px;
+      text-align: center;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      font-weight: 800;
+    }
+
+    .draw-loader {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 18px;
+      place-items: center;
+      color: var(--accent);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .draw-orb {
+      width: clamp(118px, 20vw, 190px);
+      height: clamp(118px, 20vw, 190px);
+      border-radius: 999px;
+      border: 2px solid color-mix(in srgb, var(--accent) 36%, transparent);
+      background:
+        radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.85), transparent 26%),
+        radial-gradient(circle, color-mix(in srgb, var(--accent) 28%, var(--panel)), var(--panel));
+      box-shadow: 0 26px 60px rgba(20, 30, 55, 0.2);
+      animation: orbBounce 880ms ease-in-out infinite alternate;
+    }
+
+    body.sad-mode .draw-orb {
+      border-radius: 46% 54% 56% 44% / 44% 44% 56% 56%;
+      animation: sadOrb 960ms ease-in-out infinite alternate;
+      box-shadow: 0 26px 60px rgba(40, 48, 59, 0.16);
+    }
+
+    .draw-status {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.2rem;
+      margin-top: 14px;
+      color: var(--muted);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .controls-card {
+      padding: 16px;
+    }
+
+    .controls-card h2 {
+      margin-bottom: 12px;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.84rem;
+      font-weight: 850;
+    }
+
+    textarea,
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 9px 11px;
+      background: var(--panel);
+      color: var(--text);
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+      font-size: 0.92rem;
+    }
+
+    input[type="number"] {
+      max-width: 120px;
+    }
+
+    .hint {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .row {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      align-items: end;
+      margin-top: 12px;
+    }
+
+    .grow {
+      flex: 1 1 110px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 13px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(20, 30, 55, 0.13);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+      box-shadow: none;
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    button.secondary:hover {
+      background: color-mix(in srgb, var(--text) 6%, transparent);
+    }
+
+    .mode-toggle {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin: 12px 0;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--panel-soft) 72%, transparent);
+    }
+
+    .mode-toggle label {
+      margin: 0;
+    }
+
+    .mode-toggle p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-flex;
+      width: 54px;
+      height: 30px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .switch input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .switch span {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel) 84%, var(--muted));
+      transition: background 160ms ease;
+    }
+
+    .switch span::before {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--panel);
+      box-shadow: 0 3px 10px rgba(20, 30, 55, 0.22);
+      transition: transform 180ms ease;
+    }
+
+    .switch input:checked + span {
+      background: var(--accent);
+    }
+
+    .switch input:checked + span::before {
+      transform: translateX(24px);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 9px;
+      background: color-mix(in srgb, var(--panel) 86%, var(--accent-soft));
+    }
+
+    .stat b {
+      display: block;
+      font-size: 1.22rem;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+
+    .section-title,
+    details summary {
+      margin: 14px 0 8px;
+      font-size: 0.9rem;
+      font-weight: 900;
+    }
+
+    details summary {
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      min-height: 38px;
+      max-height: 190px;
+      overflow: auto;
+      padding: 10px;
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--panel) 84%, transparent);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      min-height: 30px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--chip);
+      border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+      font-size: 0.88rem;
+      font-weight: 850;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .message {
+      margin-top: 10px;
+      min-height: 1.4em;
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+
+    .message.error {
+      color: var(--danger);
+    }
+
+    .history-item {
+      width: 100%;
+      display: flex;
+      gap: 7px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-item:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .history-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    #effectsLayer {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .confetti-piece,
+    .rain-piece {
+      position: absolute;
+      top: -24px;
+      pointer-events: none;
+    }
+
+    .confetti-piece {
+      width: 10px;
+      height: 16px;
+      border-radius: 3px;
+      animation: confettiFall var(--duration, 1000ms) ease-out forwards;
+    }
+
+    .rain-piece {
+      width: 4px;
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(105, 117, 134, 0.32);
+      animation: rainFall var(--duration, 1200ms) ease-in forwards;
+    }
+
+    footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    @keyframes slowSpin {
+      to {
+        transform: rotate(1turn);
+      }
+    }
+
+    @keyframes spotlight {
+      to {
+        transform: rotate(1turn);
+      }
+    }
+
+    @keyframes winnerPop {
+      0% {
+        opacity: 0;
+        transform: translateY(34px) scale(0.55) rotate(-5deg);
+      }
+      70% {
+        transform: translateY(-10px) scale(1.08) rotate(2deg);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(0);
+      }
+    }
+
+    @keyframes sadReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(-22px) scale(1.08);
+        filter: blur(6px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes stagePulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.012);
+      }
+    }
+
+    @keyframes quietSway {
+      0%, 100% {
+        transform: translateX(0);
+      }
+      30% {
+        transform: translateX(-3px);
+      }
+      60% {
+        transform: translateX(2px);
+      }
+    }
+
+    @keyframes orbBounce {
+      from {
+        transform: translateY(0) rotate(0deg) scale(0.96);
+      }
+      to {
+        transform: translateY(-18px) rotate(12deg) scale(1.04);
+      }
+    }
+
+    @keyframes sadOrb {
+      from {
+        transform: translateY(-4px) scale(1.02);
+      }
+      to {
+        transform: translateY(12px) scale(0.96);
+      }
+    }
+
+    @keyframes confettiFall {
+      0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(105vh) rotate(720deg);
+      }
+    }
+
+    @keyframes rainFall {
+      0% {
+        opacity: 0;
+        transform: translateY(0);
+      }
+      12% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(105vh);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="effectsLayer" aria-hidden="true"></div>
+  <main>
+    <section class="hero">
+      <div>
+        <h1>Elimination Draw</h1>
+        <p class="subtitle">
+          Enter player numbers, choose how many to eliminate, and draw without replacement.
+          Eliminated numbers are removed from the pool for the next run.
+        </p>
+      </div>
+    </section>
+
+    <section class="app" aria-label="Random number picker app">
+      <section class="card stage-card" aria-labelledby="stageTitle">
+        <div class="stage-header">
+          <div>
+            <p id="stageEyebrow" class="eyebrow">Random draw</p>
+            <h2 id="stageTitle">Selected Numbers</h2>
+          </div>
+          <div class="remaining-pill" aria-label="Remaining numbers">
+            <strong id="remainingCountBig">0</strong>
+            <span>left</span>
+          </div>
+        </div>
+
+        <div id="winnerBoard" class="winner-board" aria-live="polite">
+          <span class="board-empty">No eliminations yet.</span>
+        </div>
+        <div id="drawStatus" class="draw-status">Ready to draw.</div>
+      </section>
+
+      <aside class="card controls-card" aria-label="Settings">
+        <h2>Settings</h2>
+
+        <label for="numberInput">Player numbers</label>
+        <textarea id="numberInput" spellcheck="false">1 - 100</textarea>
+        <p class="hint">
+          Examples: <strong>1 - 100</strong>, <strong>1, 3, 5, 7</strong>, or <strong>10-20, 42, 99</strong>.
+        </p>
+
+        <div class="mode-toggle">
+          <div>
+            <label for="sadMode">Sad mode</label>
+            <p>Muted reveal, no confetti, and quieter wording for eliminated players.</p>
+          </div>
+          <label class="switch" aria-label="Toggle sad elimination mode">
+            <input id="sadMode" type="checkbox" />
+            <span aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="grow">
+            <label for="pickCount">How many to eliminate</label>
+            <input id="pickCount" type="number" min="1" step="1" value="5" />
+          </div>
+          <button id="drawButton" type="button">Pick numbers</button>
+        </div>
+
+        <div class="row">
+          <button id="resetButton" class="secondary" type="button">Load / reset list</button>
+          <button id="clearButton" class="secondary" type="button">Clear saved state</button>
+        </div>
+
+        <div id="message" class="message" role="status" aria-live="polite"></div>
+
+        <div class="stats" aria-label="Number counts">
+          <div class="stat">
+            <b id="totalCount">0</b>
+            <span>Total</span>
+          </div>
+          <div class="stat">
+            <b id="remainingCount">0</b>
+            <span>Left</span>
+          </div>
+          <div class="stat">
+            <b id="pickedCount">0</b>
+            <span>Out</span>
+          </div>
+        </div>
+
+        <details open>
+          <summary id="remainingTitle">Remaining numbers</summary>
+          <div id="remainingNumbers" class="chips"><span class="empty">Load a list to begin.</span></div>
+        </details>
+
+        <details>
+          <summary id="historyTitle">Pick history</summary>
+          <div id="history" class="chips"><span class="empty">No pick history yet.</span></div>
+        </details>
+      </aside>
+    </section>
+
+    <footer>
+      This app stores its current list and mode in your browser using localStorage, so refreshes keep the remaining players.
+    </footer>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "random-number-picker-state-v2";
+    const OLD_STORAGE_KEY = "random-number-picker-state-v1";
+
+    const elements = {
+      numberInput: document.getElementById("numberInput"),
+      pickCount: document.getElementById("pickCount"),
+      sadMode: document.getElementById("sadMode"),
+      drawButton: document.getElementById("drawButton"),
+      resetButton: document.getElementById("resetButton"),
+      clearButton: document.getElementById("clearButton"),
+      message: document.getElementById("message"),
+      totalCount: document.getElementById("totalCount"),
+      remainingCount: document.getElementById("remainingCount"),
+      remainingCountBig: document.getElementById("remainingCountBig"),
+      pickedCount: document.getElementById("pickedCount"),
+      winnerBoard: document.getElementById("winnerBoard"),
+      drawStatus: document.getElementById("drawStatus"),
+      stageEyebrow: document.getElementById("stageEyebrow"),
+      stageTitle: document.getElementById("stageTitle"),
+      remainingTitle: document.getElementById("remainingTitle"),
+      historyTitle: document.getElementById("historyTitle"),
+      remainingNumbers: document.getElementById("remainingNumbers"),
+      history: document.getElementById("history"),
+      effectsLayer: document.getElementById("effectsLayer")
+    };
+
+    let isDrawing = false;
+
+    let state = {
+      sourceText: "1 - 100",
+      originalNumbers: [],
+      remainingNumbers: [],
+      pickedNumbers: [],
+      lastPicked: [],
+      history: [],
+      sadMode: false
+    };
+
+    function parseNumbers(text) {
+      const normalized = text.replace(/[\u2013\u2014]/g, "-").replace(/\bto\b/gi, "-");
+      const matches = normalized.matchAll(/(\d+)\s*-\s*(\d+)|\d+/g);
+      const numbers = [];
+      const seen = new Set();
+
+      for (const match of matches) {
+        if (match[1] !== undefined && match[2] !== undefined) {
+          const start = Number(match[1]);
+          const end = Number(match[2]);
+          const step = start <= end ? 1 : -1;
+          for (let n = start; step > 0 ? n <= end : n >= end; n += step) {
+            if (!seen.has(n)) {
+              seen.add(n);
+              numbers.push(n);
+            }
+          }
+        } else {
+          const n = Number(match[0]);
+          if (!seen.has(n)) {
+            seen.add(n);
+            numbers.push(n);
+          }
+        }
+      }
+
+      return numbers;
+    }
+
+    function pickWithoutReplacement(pool, count) {
+      const working = [...pool];
+      const picked = [];
+      const draws = Math.min(count, working.length);
+
+      for (let i = 0; i < draws; i += 1) {
+        const index = Math.floor(Math.random() * working.length);
+        picked.push(working[index]);
+        working.splice(index, 1);
+      }
+
+      return { picked, remaining: working };
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(OLD_STORAGE_KEY);
+      if (!saved) {
+        loadOrResetList(false);
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(saved);
+        state = {
+          sourceText: parsed.sourceText || "1 - 100",
+          originalNumbers: Array.isArray(parsed.originalNumbers) ? parsed.originalNumbers : [],
+          remainingNumbers: Array.isArray(parsed.remainingNumbers) ? parsed.remainingNumbers : [],
+          pickedNumbers: Array.isArray(parsed.pickedNumbers) ? parsed.pickedNumbers : [],
+          lastPicked: Array.isArray(parsed.lastPicked) ? parsed.lastPicked : [],
+          history: Array.isArray(parsed.history) ? parsed.history : [],
+          sadMode: Boolean(parsed.sadMode)
+        };
+        elements.numberInput.value = state.sourceText;
+        elements.sadMode.checked = state.sadMode;
+        applyMode();
+
+        if (!state.originalNumbers.length) {
+          loadOrResetList(false);
+        }
+      } catch {
+        loadOrResetList(false);
+      }
+    }
+
+    function setMessage(text, type = "") {
+      elements.message.textContent = text;
+      elements.message.className = `message ${type}`.trim();
+    }
+
+    function noun(count, singular, plural) {
+      return count === 1 ? singular : plural;
+    }
+
+    function applyMode() {
+      document.body.classList.toggle("sad-mode", state.sadMode);
+      elements.stageEyebrow.textContent = state.sadMode ? "Quiet elimination" : "Elimination draw";
+      elements.stageTitle.textContent = "Eliminated Numbers";
+      elements.drawButton.textContent = "Eliminate numbers";
+      elements.historyTitle.textContent = "Elimination history";
+      elements.remainingTitle.textContent = "Players still in";
+    }
+
+    function setControlsDisabled(disabled) {
+      elements.drawButton.disabled = disabled || state.remainingNumbers.length === 0;
+      elements.resetButton.disabled = disabled;
+      elements.clearButton.disabled = disabled;
+      elements.numberInput.disabled = disabled;
+      elements.pickCount.disabled = disabled;
+      elements.sadMode.disabled = disabled;
+    }
+
+    function renderChips(container, values, emptyText) {
+      container.innerHTML = "";
+
+      if (!values.length) {
+        const empty = document.createElement("span");
+        empty.className = "empty";
+        empty.textContent = emptyText;
+        container.appendChild(empty);
+        return;
+      }
+
+      for (const value of values) {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = value;
+        container.appendChild(chip);
+      }
+    }
+
+    function renderStage() {
+      elements.winnerBoard.innerHTML = "";
+      elements.winnerBoard.classList.toggle("compact", state.lastPicked.length > 10);
+
+      if (!state.lastPicked.length) {
+        const empty = document.createElement("span");
+        empty.className = "board-empty";
+        empty.textContent = "No players have been eliminated yet.";
+        elements.winnerBoard.appendChild(empty);
+        elements.drawStatus.textContent = "Ready to draw.";
+        return;
+      }
+
+      state.lastPicked.forEach((value, index) => {
+        const chip = document.createElement("span");
+        chip.className = "winner-chip";
+        chip.style.setProperty("--i", index);
+        chip.textContent = value;
+        elements.winnerBoard.appendChild(chip);
+      });
+
+      elements.drawStatus.textContent = `${state.lastPicked.length} ${noun(state.lastPicked.length, "number", "numbers")} eliminated.`;
+    }
+
+    function renderHistory() {
+      elements.history.innerHTML = "";
+
+      if (!state.history.length) {
+        const empty = document.createElement("span");
+        empty.className = "empty";
+        empty.textContent = "No elimination history yet.";
+        elements.history.appendChild(empty);
+        return;
+      }
+
+      state.history.forEach((entry, index) => {
+        const item = document.createElement("div");
+        item.className = "history-item";
+
+        const label = document.createElement("span");
+        label.className = "history-label";
+        label.textContent = `Elimination ${state.history.length - index}:`;
+        item.appendChild(label);
+
+        entry.forEach(value => {
+          const chip = document.createElement("span");
+          chip.className = "chip";
+          chip.textContent = value;
+          item.appendChild(chip);
+        });
+
+        elements.history.appendChild(item);
+      });
+    }
+
+    function render() {
+      applyMode();
+      elements.totalCount.textContent = state.originalNumbers.length;
+      elements.remainingCount.textContent = state.remainingNumbers.length;
+      elements.remainingCountBig.textContent = state.remainingNumbers.length;
+      elements.pickedCount.textContent = state.pickedNumbers.length;
+
+      renderStage();
+      renderChips(elements.remainingNumbers, state.remainingNumbers, "No numbers remaining.");
+      renderHistory();
+      setControlsDisabled(isDrawing);
+    }
+
+    function renderDrawingStage() {
+      elements.winnerBoard.innerHTML = "";
+      elements.winnerBoard.classList.remove("compact");
+
+      const loader = document.createElement("div");
+      loader.className = "draw-loader";
+
+      const orb = document.createElement("div");
+      orb.className = "draw-orb";
+      loader.appendChild(orb);
+
+      const label = document.createElement("div");
+      label.textContent = "Eliminating...";
+      loader.appendChild(label);
+
+      elements.winnerBoard.appendChild(loader);
+      elements.drawStatus.textContent = state.sadMode
+        ? "A quiet reveal is in progress."
+        : "Randomizing the next elimination.";
+    }
+
+    function loadOrResetList(showMessage = true) {
+      const sourceText = elements.numberInput.value;
+      const numbers = parseNumbers(sourceText);
+
+      if (!numbers.length) {
+        setMessage("Enter at least one number or range before loading the list.", "error");
+        return;
+      }
+
+      state = {
+        sourceText,
+        originalNumbers: numbers,
+        remainingNumbers: [...numbers],
+        pickedNumbers: [],
+        lastPicked: [],
+        history: [],
+        sadMode: elements.sadMode.checked
+      };
+
+      saveState();
+      render();
+
+      if (showMessage) {
+        setMessage(`Loaded ${numbers.length} unique ${noun(numbers.length, "number", "numbers")}.`);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => window.setTimeout(resolve, ms));
+    }
+
+    function prefersReducedMotion() {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+
+    async function drawNumbers() {
+      if (isDrawing) return;
+
+      const count = Number.parseInt(elements.pickCount.value, 10);
+
+      if (!Number.isInteger(count) || count < 1) {
+        setMessage("Choose a pick amount of at least 1.", "error");
+        return;
+      }
+
+      if (!state.remainingNumbers.length) {
+        setMessage("No numbers are left. Reset the list to start over.", "error");
+        return;
+      }
+
+      isDrawing = true;
+      setMessage("");
+      setControlsDisabled(true);
+      renderDrawingStage();
+
+      if (!prefersReducedMotion()) {
+        await sleep(state.sadMode ? 950 : 820);
+      }
+
+      const { picked, remaining } = pickWithoutReplacement(state.remainingNumbers, count);
+      state.lastPicked = picked;
+      state.remainingNumbers = remaining;
+      state.pickedNumbers = [...state.pickedNumbers, ...picked];
+      state.history = [picked, ...state.history];
+
+      saveState();
+      isDrawing = false;
+      render();
+
+      const shortCount = count > picked.length;
+      const note = shortCount
+        ? `Only ${picked.length} ${noun(picked.length, "number was", "numbers were")} left, so all remaining numbers were eliminated.`
+        : `Eliminated ${picked.length} ${noun(picked.length, "number", "numbers")}.`;
+      setMessage(note);
+
+      playRevealEffect();
+    }
+
+    function playRevealEffect() {
+      const className = state.sadMode ? "mourning" : "celebrating";
+      document.body.classList.add(className);
+
+      if (!prefersReducedMotion()) {
+        if (state.sadMode) {
+          createRain();
+        } else {
+          createConfetti();
+        }
+      }
+
+      window.setTimeout(() => {
+        document.body.classList.remove(className);
+      }, 1100);
+    }
+
+    function createConfetti() {
+      const colors = ["#365cff", "#ffd166", "#ff4d8d", "#20c997", "#ffffff"];
+      const amount = 90;
+      elements.effectsLayer.innerHTML = "";
+
+      for (let i = 0; i < amount; i += 1) {
+        const piece = document.createElement("span");
+        piece.className = "confetti-piece";
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+        piece.style.setProperty("--duration", `${850 + Math.random() * 800}ms`);
+        elements.effectsLayer.appendChild(piece);
+      }
+
+      window.setTimeout(() => {
+        elements.effectsLayer.innerHTML = "";
+      }, 1900);
+    }
+
+    function createRain() {
+      const amount = 45;
+      elements.effectsLayer.innerHTML = "";
+
+      for (let i = 0; i < amount; i += 1) {
+        const piece = document.createElement("span");
+        piece.className = "rain-piece";
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.opacity = `${0.18 + Math.random() * 0.34}`;
+        piece.style.setProperty("--duration", `${900 + Math.random() * 700}ms`);
+        piece.style.animationDelay = `${Math.random() * 220}ms`;
+        elements.effectsLayer.appendChild(piece);
+      }
+
+      window.setTimeout(() => {
+        elements.effectsLayer.innerHTML = "";
+      }, 1900);
+    }
+
+    function clearSavedState() {
+      const keepSadMode = elements.sadMode.checked;
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(OLD_STORAGE_KEY);
+      elements.numberInput.value = "1 - 100";
+      elements.sadMode.checked = keepSadMode;
+      state = {
+        sourceText: "1 - 100",
+        originalNumbers: [],
+        remainingNumbers: [],
+        pickedNumbers: [],
+        lastPicked: [],
+        history: [],
+        sadMode: keepSadMode
+      };
+      loadOrResetList(false);
+      setMessage("Saved state cleared and the default 1 - 100 list was loaded.");
+    }
+
+    elements.drawButton.addEventListener("click", drawNumbers);
+    elements.resetButton.addEventListener("click", () => loadOrResetList(true));
+    elements.clearButton.addEventListener("click", clearSavedState);
+    elements.sadMode.addEventListener("change", () => {
+      state.sadMode = elements.sadMode.checked;
+      saveState();
+      render();
+      setMessage(state.sadMode ? "Sad mode is on. The reveal is muted." : "Sad mode is off. Reveal effects are active.");
+    });
+
+    loadState();
+    render();
+  </script>
+</body>
+</html>
