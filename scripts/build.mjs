@@ -1,22 +1,12 @@
-import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const srcDir = join(root, "src");
-const distDir = join(root, "dist");
+const dist = join(root, "dist");
 
-await rm(distDir, { recursive: true, force: true });
-await mkdir(distDir, { recursive: true });
-await copyFile(join(srcDir, "index.html"), join(distDir, "index.html"));
+await rm(dist, { recursive: true, force: true });
+await mkdir(dist, { recursive: true });
+await copyFile(join(root, "src", "index.html"), join(dist, "index.html"));
 
-// Use the same page for unknown routes so the deployed app has a friendly fallback.
-await copyFile(join(srcDir, "index.html"), join(distDir, "404.html"));
-
-await writeFile(
-  join(distDir, "robots.txt"),
-  "User-agent: *\nAllow: /\n",
-  "utf8"
-);
-
-console.log("Built static app in dist/");
+console.log("Built static site to dist/.");
