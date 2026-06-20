@@ -1,6 +1,6 @@
 {
-  "name": "elimination-number-draw",
-  "version": "1.0.0",
+  "name": "elimination-arena",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {

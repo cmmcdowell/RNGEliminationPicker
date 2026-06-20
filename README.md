@@ -1,40 +1,22 @@
-# Elimination Number Draw
+# Elimination Arena
 
-A static, browser-only elimination draw app for games. Enter player numbers, choose how many to eliminate, and draw without replacement. Eliminated numbers are removed from the remaining pool so they cannot be picked again until the list is reset.
+A Vercel-ready static app for drawing player numbers without replacement.
 
 ## Features
 
-- Supports ranges such as `1 - 100`
-- Supports comma-separated lists such as `1, 3, 5, 7`
-- Supports mixed input such as `10-20, 42, 99`
-- Configurable number of players to eliminate per draw
-- Large participant-facing eliminated-number display
-- Remaining-player count, elimination history, and browser-saved state
-- Sad mode toggle for muted eliminations with no confetti
-- No backend, database, accounts, or external dependencies
+- Sleek participant-facing arena display
+- Settings hidden in a side menu
+- Beast Games-inspired neon cyan, pink, and dark arena colors
+- Sad mode for quieter eliminations
+- Browser-generated sound effects with a mute and volume control
+- Ranges and lists, such as `1 - 100`, `1, 3, 5, 7`, or `10-20, 42, 99`
+- Picks without replacement and saves state in localStorage
 
-## Vercel deployment
-
-This repo is ready for Vercel.
-
-- Framework preset: Other
-- Build command: `npm run build`
-- Output directory: `dist`
-
-These are also set in `vercel.json`, so Vercel should pick them up automatically from the repository.
-
-## Local usage
-
-```bash
-npm run start
-```
-
-Then open the local URL printed in the terminal.
-
-To test the production build locally:
+## Local commands
 
 ```bash
 npm run build
+npm start
 ```
 
-The generated static site will be in `dist/`.
+Vercel uses `npm run build` and serves the `dist` folder.
